@@ -1,18 +1,11 @@
+[file name]: app.py
+[file content begin]
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
 import io
-import zipfile
 import json
 import time
 from datetime import datetime
-import numpy as np
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import requests
-import base64
-import uuid
 import random
 import re
 
@@ -24,12 +17,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Import our modules
+# Import our modules with safe fallbacks
 try:
     from compliance_engine import AdvancedComplianceEngine
     compliance_engine = AdvancedComplianceEngine()
 except ImportError as e:
-    st.error(f"Compliance engine loading issue: {e}")
+    st.warning(f"Compliance engine loading issue: {e}. Using fallback engine.")
     class AdvancedComplianceEngine:
         def check_text_compliance(self, headline, subhead, product_category="general"): 
             return {"approved": True, "issues": [], "suggestions": []}
@@ -59,18 +52,18 @@ except ImportError:
 try:
     from background_remover import remove_background_ai, enhance_image_quality
 except ImportError:
-    def remove_background_ai(image_file): 
-        return image_file
+    def remove_background_ai(image): 
+        return image
     def enhance_image_quality(image): 
         return image
 
 try:
     from value_tile_generator import generate_value_tile, validate_value_tile_design, get_value_tile_templates
 except ImportError:
-    def generate_value_tile(*args, **kwargs): 
-        img = Image.new('RGB', (300, 100), (200, 200, 200))
+    def generate_value_tile(tile_type, price_data, dimensions=(300, 100)):
+        img = Image.new('RGB', dimensions, (200, 200, 200))
         draw = ImageDraw.Draw(img)
-        draw.rectangle([0, 0, 299, 99], outline=(0, 83, 159), width=2)
+        draw.rectangle([0, 0, dimensions[0]-1, dimensions[1]-1], outline=(0, 83, 159), width=2)
         return img
     def validate_value_tile_design(*args, **kwargs): 
         return {"valid": True, "issues": [], "recommendations": []}
@@ -191,7 +184,7 @@ def create_tesco_logo(size=(100, 40)):
     draw = ImageDraw.Draw(logo)
     draw.rectangle([10, 10, size[0]-10, size[1]-10], fill="#00539F", outline="#FFFFFF", width=2)
     try:
-        font = ImageFont.truetype("Arial", 14)
+        font = ImageFont.truetype("arial.ttf", 14)
     except:
         font = ImageFont.load_default()
     draw.text((size[0]//2, size[1]//2), "TESCO", fill="#FFFFFF", font=font, anchor="mm")
@@ -328,10 +321,10 @@ def generate_creative(dimensions, packshots, headline, subhead, value_tile_type,
     
     # Add text with compliance font sizes - Appendix B HARD FAIL
     try:
-        headline_font = ImageFont.truetype("Arial", 24)  # 20px minimum + buffer
-        subhead_font = ImageFont.truetype("Arial", 16)   # 12px minimum + buffer
-        tag_font = ImageFont.truetype("Arial", 14)
-        drinkaware_font = ImageFont.truetype("Arial", 20)  # Minimum 20px for alcohol - HARD FAIL
+        headline_font = ImageFont.truetype("arial.ttf", 24)  # 20px minimum + buffer
+        subhead_font = ImageFont.truetype("arial.ttf", 16)   # 12px minimum + buffer
+        tag_font = ImageFont.truetype("arial.ttf", 14)
+        drinkaware_font = ImageFont.truetype("arial.ttf", 20)  # Minimum 20px for alcohol - HARD FAIL
     except:
         headline_font = ImageFont.load_default()
         subhead_font = ImageFont.load_default()
@@ -361,7 +354,7 @@ def generate_creative(dimensions, packshots, headline, subhead, value_tile_type,
             'lep_price': lep_price,
             'end_date': clubcard_end_date
         }
-        tile = generate_value_tile(value_tile_type, price_data)
+        tile = generate_value_tile(value_tile_type, price_data, (300, 100))
         if tile:
             # Position value tile based on type - Appendix A rules
             if value_tile_type == "Everyday Low Price":
@@ -1149,3 +1142,4 @@ def main():
 # Run the main application
 if __name__ == "__main__":
     main()
+[file content end]
