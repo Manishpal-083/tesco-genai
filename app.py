@@ -1,5 +1,3 @@
-[file name]: app.py
-[file content begin]
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont, ImageEnhance, ImageFilter
 import io
@@ -1142,4 +1140,3 @@ def main():
 # Run the main application
 if __name__ == "__main__":
     main()
-[file content end]
